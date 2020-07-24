@@ -1,5 +1,5 @@
-# Created by https://www.toptal.com/developers/gitignore/api/scala,sbt,code
-# Edit at https://www.toptal.com/developers/gitignore?templates=scala,sbt,code
+# Created by https://www.toptal.com/developers/gitignore/api/sbt,code,scala,metals
+# Edit at https://www.toptal.com/developers/gitignore?templates=sbt,code,scala,metals
 
 ### Code ###
 .vscode/*
@@ -8,6 +8,11 @@
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
+
+### Metals ###
+.metals/
+.bloop/
+project/metals.sbt
 
 ### SBT ###
 # Simple Build Tool
@@ -27,4 +32,4 @@ project/plugins/project/
 *.class
 *.log
 
-# End of https://www.toptal.com/developers/gitignore/api/scala,sbt,code
+# End of https://www.toptal.com/developers/gitignore/api/sbt,code,scala,metals

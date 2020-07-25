@@ -6,7 +6,7 @@ trait Set extends (String => Boolean) {
     element => element == input || this(element)
 
   final def remove(input: String): Set =
-    element => element != input || !this(element)
+    element => element != input && this(input)
 
   final def union(that: Set): Set =
     element => this(element) || that(element)

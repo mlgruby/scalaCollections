@@ -1,6 +1,6 @@
 package native.collections
 
-trait Set extends (String => Boolean) {
+sealed trait Set extends (String => Boolean) {
 
   def add(input: String): Set
   def remove(input: String): Set
@@ -8,7 +8,28 @@ trait Set extends (String => Boolean) {
   def intersection(that: Set): Set
   def difference(that: Set): Set
 
-  //   final def isSubsetOf(that: Set): Boolean = ???
+  def isSubSetOf(that: Set): Boolean
+
+  final def isSuperSetOf(that: Set): Boolean =
+    that.isSubSetOf(this)
+
+  // override here because of already implemented equality in case class
+  final override def equals(other: Any): Boolean =
+    other match {
+      case that: Set => this.isSubSetOf(that) && that.isSubSetOf(this)
+      case _         => false
+    }
+
+  def size: Int
+
+  final def isEmpty: Boolean =
+    this eq Set.empty
+
+  final def isNonEmpty: Boolean = !isEmpty
+
+  def isSingleton: Boolean
+
+  def sample: Option[String]
 
 }
 
@@ -52,6 +73,20 @@ object Set {
         differenceOfOthers.add(element)
     }
 
+    final override def isSubSetOf(that: Set): Boolean =
+      that(element) && otherElements.isSubSetOf(that)
+
+    final override def hashCode: Int =
+      element.hashCode + otherElements.hashCode
+
+    final override def size: Int =
+      1 + otherElements.size
+
+    final override def isSingleton: Boolean =
+      otherElements.isEmpty
+
+    final override def sample: Option[String] = Some(element)
+
   }
 
   private object Empty extends Set {
@@ -67,6 +102,14 @@ object Set {
     final override def intersection(that: Set): Set = this
 
     final override def difference(that: Set): Set = this
+
+    final override def isSubSetOf(that: Set): Boolean = true
+
+    final override def size: Int = 0
+
+    final override def isSingleton: Boolean = false
+
+    final override def sample: Option[String] = None
   }
 
   val empty: Set = Empty

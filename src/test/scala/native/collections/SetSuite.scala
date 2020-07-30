@@ -315,6 +315,80 @@ class SetSuite extends FunSuite with Matchers {
     Set.empty.add(a).add(b).sample should contain oneOf (a, b)
   }
 
+  test("foreach on an empty Set should not apply the function") {
+    noException should be thrownBy Set.empty.foreach(_ =>
+      sys.error("should not be thrown")
+    )
+  }
+
+  test("forerach on non empty Set should apply the function") {
+    var functionWasApplied = false
+
+    Set.empty.add(randomElement).foreach(_ => functionWasApplied = true)
+
+    functionWasApplied shouldBe true
+  }
+
+  test("foreach should be able to calculate the size of given Set 0") {
+    var size = 0
+
+    val set = Set.empty
+
+    set.foreach(_ => size += 1)
+
+    size shouldBe 0
+    size shouldBe set.size
+  }
+
+  test("foreach should be able to calculate the size of given Set 1") {
+    var size = 0
+
+    val set = Set.empty.add(randomElement)
+
+    set.foreach(_ => size += 1)
+
+    size shouldBe 1
+    size shouldBe set.size
+  }
+
+  test("foreach should be able to calculate the size of given Set 2") {
+    var size = 0
+
+    val set = Set.empty.add(randomElement).add(randomElement)
+
+    set.foreach(_ => size += 1)
+
+    size shouldBe 2
+    size shouldBe set.size
+  }
+
+  test("foreach should be able to calculate the size of given Set 3") {
+    var size = 0
+
+    val element = randomElement
+
+    val set = Set.empty.add(element).add(element)
+
+    set.foreach(_ => size += 1)
+
+    size shouldBe 1
+    size shouldBe set.size
+  }
+
+  test("Set() should not compile") {
+    "Set()" shouldNot compile
+  }
+
+  test(
+    "calling the varargs apply method on the Set comapnion object should yield a Set with all the arguments as elements"
+  ) {
+    val a = randomElement
+    val b = randomElement
+    val c = randomElement
+
+    Set(a, b, c) shouldBe Set.empty.add(a).add(b).add(c)
+  }
+
   private def randomElement: String =
     scala.util.Random.alphanumeric.take(5).mkString
 

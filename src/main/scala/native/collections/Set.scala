@@ -31,9 +31,17 @@ sealed trait Set extends (String => Boolean) {
 
   def sample: Option[String]
 
+  def foreach(function: String => Unit): Unit
 }
 
 object Set {
+
+  // adding singnature apply(element, otherelement) makes Set() not to compile
+  def apply(element: String, otherElements: String*): Set = {
+    var result: Set = empty.add(element)
+    otherElements.foreach(current => result = result.add(current))
+    result
+  }
 
   private final case class NonEmpty(element: String, otherElements: Set)
       extends Set {
@@ -87,6 +95,11 @@ object Set {
 
     final override def sample: Option[String] = Some(element)
 
+    final override def foreach(function: String => Unit): Unit = {
+      function(element)
+      otherElements.foreach(function)
+    }
+
   }
 
   private object Empty extends Set {
@@ -110,6 +123,8 @@ object Set {
     final override def isSingleton: Boolean = false
 
     final override def sample: Option[String] = None
+
+    final override def foreach(function: String => Unit): Unit = ()
   }
 
   val empty: Set = Empty

@@ -4,7 +4,7 @@ organization := "mlgruby"
 
 scalaVersion := "2.13.3"
 
-triggeredMessage := Watched.clearWhenTriggered
+watchTriggeredMessage := Watch.clearScreenOnTrigger
 
 initialCommands in console := "import native.collections._"
 

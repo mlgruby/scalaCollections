@@ -74,9 +74,22 @@ sealed trait Set extends (String => Boolean) {
       case _         => false
     }
 
+  final override def hashCode: Int = {
+    if (isEmpty)
+      41
+    else {
+      val nonEmptySet = this.asInstanceOf[NonEmpty]
+      val element = nonEmptySet.element
+      val otherElements = nonEmptySet.otherElements
+
+      element.hashCode + otherElements.hashCode
+    }
+
+  }
+
   final def size: Int = {
     var result = 0
-    foreach { current =>
+    foreach { _ =>
       result = result + 1
     }
     result
@@ -87,11 +100,38 @@ sealed trait Set extends (String => Boolean) {
 
   final def isNonEmpty: Boolean = !isEmpty
 
-  def isSingleton: Boolean
+  final def isSingleton: Boolean =
+    if (isEmpty)
+      false
+    else {
+      val nonEmptySet = this.asInstanceOf[NonEmpty]
+      val otherElements = nonEmptySet.otherElements
 
-  def sample: Option[String]
+      otherElements.isEmpty
+    }
 
-  def foreach(function: String => Unit): Unit
+  def sample: Option[String] =
+    if (isEmpty)
+      None
+    else {
+      val nonEmptySet = this.asInstanceOf[NonEmpty]
+      val element = nonEmptySet.element
+      Some(element)
+    }
+
+  final def foreach(function: String => Unit): Unit = {
+    if (isNonEmpty) {
+      //   val NonEmpty(element, otherElements) = this // equality is expansive for bigger Set
+
+      val nonEmptySet = this.asInstanceOf[NonEmpty]
+      val element = nonEmptySet.element
+      val otherElements = nonEmptySet.otherElements
+
+      function(element)
+      otherElements.foreach(function)
+    }
+  }
+
 }
 
 object Set {
@@ -104,31 +144,9 @@ object Set {
   }
 
   private final case class NonEmpty(element: String, otherElements: Set)
-      extends Set {
+      extends Set
 
-    final override def hashCode: Int =
-      element.hashCode + otherElements.hashCode
-
-    final override def isSingleton: Boolean =
-      otherElements.isEmpty
-
-    final override def sample: Option[String] = Some(element)
-
-    final override def foreach(function: String => Unit): Unit = {
-      function(element)
-      otherElements.foreach(function)
-    }
-
-  }
-
-  private object Empty extends Set {
-
-    final override def isSingleton: Boolean = false
-
-    final override def sample: Option[String] = None
-
-    final override def foreach(function: String => Unit): Unit = ()
-  }
+  private object Empty extends Set
 
   val empty: Set = Empty
 

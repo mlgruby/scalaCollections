@@ -169,10 +169,7 @@ sealed trait Set[Element] extends (Element => Boolean) {
 object Set {
 
   // adding singnature apply(element, otherelement) makes Set() not to compile
-  def apply[T](
-      element: T,
-      otherElements: T*
-  ): Set[T] = {
+  def apply[T](element: T, otherElements: T*): Set[T] = {
     var result: Set[T] = empty[T].add(element)
     otherElements.foreach(current => result = result.add(current))
     result

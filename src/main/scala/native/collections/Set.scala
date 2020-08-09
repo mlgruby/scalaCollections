@@ -169,22 +169,22 @@ sealed trait Set[Element] extends (Element => Boolean) {
 object Set {
 
   // adding singnature apply(element, otherelement) makes Set() not to compile
-  def apply[Element](
-      element: Element,
-      otherElements: Element*
-  ): Set[Element] = {
-    var result: Set[Element] = empty[Element].add(element)
+  def apply[T](
+      element: T,
+      otherElements: T*
+  ): Set[T] = {
+    var result: Set[T] = empty[T].add(element)
     otherElements.foreach(current => result = result.add(current))
     result
   }
 
-  private final case class NonEmpty[Element](
-      element: Element,
-      otherElements: Set[Element]
-  ) extends Set[Element]
+  private final case class NonEmpty[T](
+      element: T,
+      otherElements: Set[T]
+  ) extends Set[T]
 
-  private class Empty[Element] extends Set[Element]
+  private class Empty[T] extends Set[T]
 
-  def empty[Element]: Set[Element] = new Empty[Element]
+  def empty[T]: Set[T] = new Empty[T]
 
 }

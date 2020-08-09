@@ -175,10 +175,8 @@ object Set {
     result
   }
 
-  private final case class NonEmpty[T](
-      element: T,
-      otherElements: Set[T]
-  ) extends Set[T]
+  private final case class NonEmpty[T](element: T, otherElements: Set[T])
+      extends Set[T]
 
   private class Empty[T] extends Set[T]
 

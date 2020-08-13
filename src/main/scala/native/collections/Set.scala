@@ -164,9 +164,7 @@ sealed trait Set[Element] extends (Element => Boolean) {
 //       function(element)
 //       otherElements.foreach(function)
 //     }
-    fold(()) { (_, current) =>
-      function(current)
-    }
+    fold(()) { (_, current) => function(current) }
 
   final def map[T](function: Element => T): Set[T] =
     // var result = empty[T]

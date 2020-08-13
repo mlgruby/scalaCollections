@@ -154,6 +154,16 @@ sealed trait Set[Element] extends (Element => Boolean) {
     }
 
   final def foreach[T](function: Element => T): Unit =
+//       if (isNonEmpty) {
+//       //   val NonEmpty(element, otherElements) = this // equality is expensive for bigger Set
+
+//       val nonEmptySet = this.asInstanceOf[NonEmpty[Element]]
+//       val element = nonEmptySet.element
+//       val otherElements = nonEmptySet.otherElements
+
+//       function(element)
+//       otherElements.foreach(function)
+//     }
     fold(()) { (_, current) =>
       function(current)
     }

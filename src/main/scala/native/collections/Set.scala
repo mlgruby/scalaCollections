@@ -7,65 +7,99 @@ sealed trait Set[Element] extends (Element => Boolean) {
   import Set._
 
   final def apply(input: Element): Boolean = {
-    var result = false
-    foreach { current =>
-      result = result || current == input
+    fold(false) { (acc, current) =>
+      acc || current == input
     }
-    result
   }
 
-  final def add(input: Element): Set[Element] = {
-    var result = NonEmpty(input, empty[Element])
-    foreach { current =>
+  @scala.annotation.tailrec
+  final def fold[T](seed: T)(function: (T, Element) => T): T = {
+    if (isEmpty)
+      seed
+    else {
+      //   val NonEmpty(element, otherElements) = this // equality is expansive for bigger Set
+
+      val nonEmptySet = this.asInstanceOf[NonEmpty[Element]]
+      val element = nonEmptySet.element
+      val otherElements = nonEmptySet.otherElements
+
+      //   val elementResult: T = function(seed, element) // this line for readability
+      otherElements.fold(function(seed, element))(function)
+    }
+  }
+
+  final def add(input: Element): Set[Element] =
+    // var result = NonEmpty(input, empty[Element])
+    // foreach { current =>
+    //   if (current != input)
+    //     result = NonEmpty(current, result)
+    // }
+    // result
+    fold(NonEmpty(input, empty[Element])) { (acc, current) =>
       if (current != input)
-        result = NonEmpty(current, result)
+        NonEmpty(current, acc)
+      else
+        acc
     }
-    result
-  }
 
-  final def remove(input: Element): Set[Element] = {
-    var result = empty[Element]
-    foreach { current =>
+  final def remove(input: Element): Set[Element] =
+//     var result = empty[Element]
+//     foreach { current =>
+//       if (current != input)
+//         result = NonEmpty(current, result)
+//     }
+//     result
+    fold(empty[Element]) { (acc, current) =>
       if (current != input)
-        result = NonEmpty(current, result)
+        NonEmpty(current, acc)
+      else
+        acc
     }
-    result
-  }
 
-  final def union(that: Set[Element]): Set[Element] = {
-    var result = that
-    foreach { current =>
-      result = result.add(current)
-    }
-    result
-  }
+  final def union(that: Set[Element]): Set[Element] =
+    // var result = that
+    // foreach { current =>
+    //   result = result.add(current)
+    // }
+    // result
+    fold(that) { (acc, current) => acc.add(current) }
 
-  final def intersection(that: Set[Element]): Set[Element] = {
-    var result = empty[Element]
-    foreach { current =>
+  final def intersection(that: Set[Element]): Set[Element] =
+    // var result = empty[Element]
+    // foreach { current =>
+    //   if (that(current))
+    //     result = result.add(current)
+    // }
+    // result
+    fold(empty[Element]) { (acc, current) =>
       if (that(current))
-        result = result.add(current)
-    }
-    result
-  }
+        acc.add(current)
+      else
+        acc
 
-  final def difference(that: Set[Element]): Set[Element] = {
-    var result = empty[Element]
-    foreach { current =>
+    }
+
+  final def difference(that: Set[Element]): Set[Element] =
+    // var result = empty[Element]
+    // foreach { current =>
+    //   if (!that(current))
+    //     result = result.add(current)
+    // }
+    // result
+    fold(empty[Element]) { (acc, current) =>
       if (!that(current))
-        result = result.add(current)
+        acc.add(current)
+      else
+        acc
     }
-    result
-  }
 
-  final def isSubSetOf(that: Set[Element]): Boolean = {
-    var result = true
-    foreach { current =>
-      result = result && that(current)
-    }
-    result
-
-  }
+  final def isSubSetOf(that: Set[Element]): Boolean =
+    // var result = true
+    // foreach { current =>
+    //   result = result && that(current)
+    // }
+    // result
+    fold(true) { (acc, current) => acc && that(current) }
 
   final def isSuperSetOf(that: Set[Element]): Boolean =
     that.isSubSetOf(this)
@@ -77,26 +111,22 @@ sealed trait Set[Element] extends (Element => Boolean) {
       case _                  => false
     }
 
-  final override def hashCode: Int = {
-    if (isEmpty)
-      41
-    else {
-      val nonEmptySet = this.asInstanceOf[NonEmpty[Element]]
-      val element = nonEmptySet.element
-      val otherElements = nonEmptySet.otherElements
+  final override def hashCode: Int =
+    // var result = 41
 
-      element.hashCode + otherElements.hashCode
-    }
+    // foreach { current =>
+    //   result = result + current.hashCode
+    // }
+    // result
+    fold(41) { (acc, current) => acc + current.hashCode }
 
-  }
-
-  final def size: Int = {
-    var result = 0
-    foreach { _ =>
-      result = result + 1
-    }
-    result
-  }
+  final def size: Int =
+    // var result = 0
+    // foreach { _ =>
+    //   result = result + 1
+    // }
+    // result
+    fold(0) { (acc, _) => acc + 1 }
 
   final def isEmpty: Boolean =
     //this eq empty // TODO fix me
@@ -123,27 +153,19 @@ sealed trait Set[Element] extends (Element => Boolean) {
       Some(element)
     }
 
-  final def foreach[T](function: Element => T): Unit = {
-    if (isNonEmpty) {
-      //   val NonEmpty(element, otherElements) = this // equality is expansive for bigger Set
-
-      val nonEmptySet = this.asInstanceOf[NonEmpty[Element]]
-      val element = nonEmptySet.element
-      val otherElements = nonEmptySet.otherElements
-
-      function(element)
-      otherElements.foreach(function)
+  final def foreach[T](function: Element => T): Unit =
+    fold(()) { (_, current) =>
+      function(current)
     }
-  }
 
-  final def map[T](function: Element => T): Set[T] = {
-    var result = empty[T]
+  final def map[T](function: Element => T): Set[T] =
+    // var result = empty[T]
 
-    foreach { current =>
-      result = result.add(function(current))
-    }
-    result
-  }
+    // foreach { current =>
+    //   result = result.add(function(current))
+    // }
+    // result
+    fold(empty[T]) { (acc, current) => acc.add(function(current)) }
 
   // this implimentation is not a optimised one as we are wrapping all elements in
   // Set which is a expensive operation
@@ -153,28 +175,33 @@ sealed trait Set[Element] extends (Element => Boolean) {
 //     }
 //   }
 
-  final def flatMap[T](function: Element => Set[T]): Set[T] = {
-    var result = empty[T]
+  final def flatMap[T](function: Element => Set[T]): Set[T] =
+    // var result = empty[T]
 
-    foreach { outerCurrent =>
-      function(outerCurrent).foreach { innerCurrent =>
-        result = result.add(innerCurrent)
+    // foreach { outerCurrent =>
+    //   function(outerCurrent).foreach { innerCurrent =>
+    //     result = result.add(innerCurrent)
+    //   }
+    // }
+    // result
+    fold(empty[T]) { (outerAcc, outerCurrent) =>
+      function(outerCurrent).fold(outerAcc) { (innerAcc, innerCurrent) =>
+        innerAcc.add(innerCurrent)
       }
     }
-    result
-  }
 
 }
 
 object Set {
 
   // adding singnature apply(element, otherelement) makes Set() not to compile
-  def apply[T](element: T, otherElements: T*): Set[T] = {
-    var result: Set[T] = empty[T].add(element)
-    otherElements.foreach(current => result = result.add(current))
-    result
-  }
-
+  def apply[T](element: T, otherElements: T*): Set[T] =
+    // var result: Set[T] = empty[T].add(element)
+    // otherElements.foreach(current => result = result.add(current))
+    // result
+    otherElements.foldLeft(empty[T].add(element)) { (acc, current) =>
+      acc.add(current)
+    }
 
   private final case class NonEmpty[T](element: T, otherElements: Set[T])
       extends Set[T]
